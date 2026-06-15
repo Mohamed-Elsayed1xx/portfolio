@@ -104,6 +104,30 @@ const RobotViewer = () => {
         viewer.style.background = "transparent";
         containerRef.current.appendChild(viewer);
 
+        // Hide "Built with Spline" button inside shadow DOM
+        const hideSplineBtn = () => {
+          const shadow = viewer.shadowRoot;
+          if (!shadow) return false;
+          const btn = shadow.querySelector("#logo");
+          if (btn) {
+            btn.style.display = "none";
+            return true;
+          }
+          return false;
+        };
+
+        viewer.addEventListener("load", () => {
+          if (!hideSplineBtn()) {
+            // fallback: watch shadow DOM until button appears
+            const mo = new MutationObserver(() => {
+              if (hideSplineBtn()) mo.disconnect();
+            });
+            if (viewer.shadowRoot) {
+              mo.observe(viewer.shadowRoot, { childList: true, subtree: true });
+            }
+          }
+        });
+
         intersectionObserver = new IntersectionObserver(
           ([entry]) => {
             if (entry.isIntersecting) attachPointerForwarding();
