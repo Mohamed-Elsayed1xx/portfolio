@@ -36,7 +36,7 @@ export const projects = [
     tags: ["React", "TypeScript", "Tailwind CSS", "ASP.NET Core", "PostgreSQL"],
     color: "#06b6d4",
     image: "/smartvibe.png",
-    live: "https://smart-vibe.vercel.app/",
+    live: "https://smartbayt-frontend-eight.vercel.app/",
     github: "https://github.com/Mohamed-Elsayed1xx/smart-vibe-frontend",
   },
   {
