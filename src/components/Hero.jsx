@@ -104,29 +104,15 @@ const RobotViewer = () => {
         viewer.style.background = "transparent";
         containerRef.current.appendChild(viewer);
 
-        // Hide "Built with Spline" button inside shadow DOM
-        const hideSplineBtn = () => {
-          const shadow = viewer.shadowRoot;
-          if (!shadow) return false;
-          const btn = shadow.querySelector("#logo");
+        // Hide "Built with Spline" button - polling every 200ms for 10s
+        const hideInterval = setInterval(() => {
+          const btn = viewer.shadowRoot?.querySelector("#logo");
           if (btn) {
-            btn.style.display = "none";
-            return true;
+            btn.style.cssText = "display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;";
+            clearInterval(hideInterval);
           }
-          return false;
-        };
-
-        viewer.addEventListener("load", () => {
-          if (!hideSplineBtn()) {
-            // fallback: watch shadow DOM until button appears
-            const mo = new MutationObserver(() => {
-              if (hideSplineBtn()) mo.disconnect();
-            });
-            if (viewer.shadowRoot) {
-              mo.observe(viewer.shadowRoot, { childList: true, subtree: true });
-            }
-          }
-        });
+        }, 200);
+        setTimeout(() => clearInterval(hideInterval), 10000);
 
         intersectionObserver = new IntersectionObserver(
           ([entry]) => {
