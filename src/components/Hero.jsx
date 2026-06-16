@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
+import AstronautViewer from "./AstronautViewer";
 
 const roles = [
   "Full-Stack Developer",
@@ -40,124 +41,6 @@ const TypingText = () => {
       {text}
       <span className="animate-pulse">|</span>
     </span>
-  );
-};
-
-const RobotViewer = () => {
-  const containerRef = useRef(null);
-
-  useEffect(() => {
-    if (!document.querySelector("script[data-spline-viewer]")) {
-      const script = document.createElement("script");
-      script.type = "module";
-      script.src =
-        "https://unpkg.com/@splinetool/viewer@1.9.82/build/spline-viewer.js";
-      script.setAttribute("data-spline-viewer", "true");
-      document.head.appendChild(script);
-    }
-
-    let viewer = null;
-    let intersectionObserver = null;
-    let removePointerListener = null;
-
-    // Forward pointermove من أي مكان في الصفحة للروبوت — بس وقت ما
-    // الهيرو نفسه ظاهر على الشاشة، عشان ما يفضلش شغال للأبد في كل الصفحة
-    const attachPointerForwarding = () => {
-      if (removePointerListener) return; // already attached
-      const forwardPointer = (e) => {
-        const canvas = viewer?.shadowRoot?.querySelector("canvas");
-        if (canvas) {
-          canvas.dispatchEvent(
-            new PointerEvent("pointermove", {
-              bubbles: true,
-              clientX: e.clientX,
-              clientY: e.clientY,
-              pointerType: "mouse",
-            }),
-          );
-        }
-      };
-      document.addEventListener("pointermove", forwardPointer);
-      removePointerListener = () =>
-        document.removeEventListener("pointermove", forwardPointer);
-    };
-
-    const detachPointerForwarding = () => {
-      if (removePointerListener) {
-        removePointerListener();
-        removePointerListener = null;
-      }
-    };
-
-    const timer = setTimeout(() => {
-      if (
-        containerRef.current &&
-        !containerRef.current.querySelector("spline-viewer")
-      ) {
-        viewer = document.createElement("spline-viewer");
-        viewer.setAttribute(
-          "url",
-          "https://prod.spline.design/8I1YsNAMZzAymxLl/scene.splinecode",
-        );
-        viewer.style.width = "100%";
-        viewer.style.height = "100%";
-        viewer.style.background = "transparent";
-        containerRef.current.appendChild(viewer);
-
-        // Hide "Built with Spline" button - polling every 200ms for 10s
-        const hideInterval = setInterval(() => {
-          const btn = viewer.shadowRoot?.querySelector("#logo");
-          if (btn) {
-            btn.style.cssText = "display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;";
-            clearInterval(hideInterval);
-          }
-        }, 200);
-        setTimeout(() => clearInterval(hideInterval), 10000);
-
-        intersectionObserver = new IntersectionObserver(
-          ([entry]) => {
-            if (entry.isIntersecting) attachPointerForwarding();
-            else detachPointerForwarding();
-          },
-          { threshold: 0 },
-        );
-        intersectionObserver.observe(containerRef.current);
-      }
-    }, 300);
-
-    return () => {
-      clearTimeout(timer);
-      detachPointerForwarding();
-      if (intersectionObserver) intersectionObserver.disconnect();
-    };
-  }, []);
-
-  const handleWheel = (e) => {
-    window.scrollBy({ top: e.deltaY, behavior: "auto" });
-  };
-
-  return (
-    <div
-      style={{ position: "relative", width: "100%", height: "100%" }}
-      onWheel={handleWheel}
-    >
-      <div ref={containerRef} className="w-full h-full" />
-      {/* Cover Spline watermark */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: "10px",
-          left: "288px",
-          right: 0,
-          height: "70px",
-          width: "270px",
-          background: "linear-gradient(to top, #020817 70%, transparent)",
-          zIndex: 10,
-          pointerEvents: "all",
-          cursor: "default",
-        }}
-      />
-    </div>
   );
 };
 
@@ -257,22 +140,21 @@ const Hero = () => {
           </motion.div>
         </div>
 
-        {/* Right - Robot */}
+        {/* Right - Astronaut */}
         <motion.div
           initial={{ opacity: 0, x: 60 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.9, delay: 0.4 }}
           className="flex-1 flex items-center justify-center"
-          style={{ marginTop: "-220px" }}
         >
           <div
-            className="relative w-[300px] h-[500px] md:w-[480px] md:h-[700px]"
+            className="relative w-[260px] h-[420px] md:w-[340px] md:h-[560px]"
             style={{ zIndex: 11 }}
           >
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl" />
             </div>
-            <RobotViewer />
+            <AstronautViewer />
           </div>
         </motion.div>
       </div>
