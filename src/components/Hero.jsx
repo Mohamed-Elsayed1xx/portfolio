@@ -149,7 +149,7 @@ const Hero = () => {
           style={{ marginTop: "20px" }}
         >
           <div
-            className="relative w-[230px] h-[380px] md:w-[300px] md:h-[500px]"
+            className="relative w-[200px] h-[300px] md:w-[260px] md:h-[400px]"
             style={{ zIndex: 11 }}
           >
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
