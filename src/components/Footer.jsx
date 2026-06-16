@@ -509,7 +509,7 @@ const Footer = () => {
                 whileHover={{ letterSpacing: "0.05em" }}
                 transition={{ duration: 0.2 }}
               >
-                &lt;Mohamed /&gt;
+                Mohamed
               </motion.h3>
               <p
                 className="text-gray-600 text-xs mt-1.5 leading-relaxed"
