@@ -146,9 +146,10 @@ const Hero = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.9, delay: 0.4 }}
           className="flex-1 flex items-center justify-center"
+          style={{ marginTop: "20px" }}
         >
           <div
-            className="relative w-[260px] h-[420px] md:w-[340px] md:h-[560px]"
+            className="relative w-[230px] h-[380px] md:w-[300px] md:h-[500px]"
             style={{ zIndex: 11 }}
           >
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
