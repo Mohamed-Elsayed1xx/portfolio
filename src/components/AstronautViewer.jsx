@@ -12,7 +12,7 @@ const AstronautViewer = () => {
     floatY: 0,
     isHovered: false,
     elapsed: 0,
-    currentArmAngle: 12, // smoothed current angle (lerped toward target)
+    currentArmAngle: 0, // smoothed current angle (lerped toward target) — matches static left arm exactly at rest
   });
 
   const [isBlinking, setIsBlinking] = useState(false);
@@ -45,7 +45,7 @@ const AstronautViewer = () => {
 
       // Arm wave — smooth lerp toward target, oscillate only once mostly raised
       if (armRef.current) {
-        const restAngle = 12;
+        const restAngle = 0;
         const raisedBase = -110;
         const targetBase = s.isHovered ? raisedBase : restAngle;
 
@@ -198,21 +198,21 @@ const AstronautViewer = () => {
       >
         <defs>
           <linearGradient id="suit" x1="0" y1="0" x2="0.5" y2="1">
-            <stop offset="0%"   stopColor="#ddeef6"/>
-            <stop offset="55%"  stopColor="#b8d0e0"/>
-            <stop offset="100%" stopColor="#7a9fb5"/>
+            <stop offset="0%"   stopColor="#ffffff"/>
+            <stop offset="50%"  stopColor="#eef3f6"/>
+            <stop offset="100%" stopColor="#cfdbe3"/>
           </linearGradient>
           <linearGradient id="shade" x1="1" y1="0" x2="0" y2="1">
             <stop offset="0%"   stopColor="rgba(0,0,0,0)"/>
-            <stop offset="100%" stopColor="rgba(0,0,0,0.2)"/>
+            <stop offset="100%" stopColor="rgba(60,90,110,0.12)"/>
           </linearGradient>
           <linearGradient id="boot" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"   stopColor="#7a9fb5"/>
-            <stop offset="100%" stopColor="#4a6a80"/>
+            <stop offset="0%"   stopColor="#cfdbe3"/>
+            <stop offset="100%" stopColor="#8aa4b3"/>
           </linearGradient>
           <linearGradient id="pack" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%"   stopColor="#9ab8c8"/>
-            <stop offset="100%" stopColor="#5a7a90"/>
+            <stop offset="0%"   stopColor="#dbe6ec"/>
+            <stop offset="100%" stopColor="#8aa4b3"/>
           </linearGradient>
           <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%"   stopColor="#06b6d4"/>
@@ -248,6 +248,9 @@ const AstronautViewer = () => {
             <ellipse cx="150" cy="124" rx="54" ry="50"/>
           </clipPath>
         </defs>
+
+        {/* ── BODY GROUP — scaled up ~22% around neck-top anchor (150,186) to fix helmet:body proportion, without touching any individual coordinate ── */}
+        <g transform="translate(150,186) scale(1.22) translate(-150,-186)">
 
         {/* ── BOOT SOLES (drawn first, behind everything) ── */}
         <ellipse cx="115" cy="448" rx="22" ry="6"  fill="rgba(0,0,0,0.18)"/>
@@ -368,7 +371,7 @@ const AstronautViewer = () => {
           ref={armRef}
           style={{
             transformOrigin: "208px 218px",
-            transform: "rotate(12deg)",
+            transform: "rotate(0deg)",
             willChange: "transform",
           }}
         >
@@ -393,6 +396,9 @@ const AstronautViewer = () => {
         {/* ── NECK ── */}
         <rect x="126" y="186" width="48" height="26" rx="12" fill="url(#suit)"/>
         <rect x="122" y="198" width="56" height="8"  rx="4"  fill="url(#cyan)" opacity="0.55"/>
+
+        </g>
+        {/* ── END BODY GROUP ── */}
 
         {/* ── HELMET SHELL ── slightly smaller, more proportional to body */}
         <circle cx="150" cy="124" r="80" fill="url(#suit)"/>
