@@ -484,7 +484,7 @@ const AstronautViewer = () => {
       {/* Hi bubble */}
       {isHovered && (
         <div style={{
-          position:"absolute", top:"5%", right:"1%",
+          position:"absolute", top:"-6%", right:"-8%",
           background:"rgba(4,8,20,0.92)",
           border:"1px solid rgba(34,211,238,0.55)",
           borderRadius:"14px", padding:"9px 18px",
