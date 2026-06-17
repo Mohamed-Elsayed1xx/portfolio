@@ -10,9 +10,9 @@ const AstronautViewer = () => {
   const stateRef = useRef({
     mouseX: 0, mouseY: 0,
     floatY: 0,
-    waveAngle: 12,
     isHovered: false,
     elapsed: 0,
+    currentArmAngle: 12, // smoothed current angle (lerped toward target)
   });
 
   const [isBlinking, setIsBlinking] = useState(false);
@@ -43,19 +43,25 @@ const AstronautViewer = () => {
         faceRef.current.setAttribute("transform", `translate(${hx},${hy})`);
       }
 
-      // Arm wave
+      // Arm wave — smooth lerp toward target, oscillate only once mostly raised
       if (armRef.current) {
-        const targetAngle = s.isHovered
-          ? -118 + Math.sin(elapsed * 6) * 18
-          : 12;
-        armRef.current.style.transition = s.isHovered ? "none" : "transform 0.55s cubic-bezier(0.34,1.4,0.64,1)";
-        armRef.current.style.transform = `rotate(${targetAngle}deg)`;
+        const restAngle = 12;
+        const raisedBase = -110;
+        const targetBase = s.isHovered ? raisedBase : restAngle;
+
+        // Lerp current angle toward target base (smooth raise/lower, no CSS transition fight)
+        const lerpSpeed = s.isHovered ? 0.12 : 0.09;
+        s.currentArmAngle += (targetBase - s.currentArmAngle) * lerpSpeed;
+
+        // Add oscillation only when close to raised position (natural wave wobble)
+        const raiseProgress = s.isHovered
+          ? Math.min(1, Math.abs(s.currentArmAngle - restAngle) / Math.abs(raisedBase - restAngle))
+          : 0;
+        const wobble = s.isHovered ? Math.sin(elapsed * 4.5) * 14 * raiseProgress : 0;
+
+        armRef.current.style.transform = `rotate(${s.currentArmAngle + wobble}deg)`;
       }
-      // Fingers stay in sync with arm state (same condition, same frame)
-      if (fingerGroupRestRef.current && fingerGroupOpenRef.current) {
-        fingerGroupRestRef.current.style.display = s.isHovered ? "none" : "block";
-        fingerGroupOpenRef.current.style.display = s.isHovered ? "block" : "none";
-      }
+      // Fingers stay constant — no toggle needed anymore
 
       animRef.current = requestAnimationFrame(animate);
     };
@@ -111,8 +117,6 @@ const AstronautViewer = () => {
   const smileRef = useRef(null);
   const leftBlushRef = useRef(null);
   const rightBlushRef = useRef(null);
-  const fingerGroupRestRef = useRef(null);
-  const fingerGroupOpenRef = useRef(null);
 
   // Second RAF pass for eye/face details
   useEffect(() => {
@@ -219,6 +223,18 @@ const AstronautViewer = () => {
             <stop offset="0%"   stopColor="#0d1f3a"/>
             <stop offset="100%" stopColor="#05101e"/>
           </radialGradient>
+          {/* Helmet rim — thick metallic ring around visor */}
+          <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%"   stopColor="#f4fafd"/>
+            <stop offset="35%"  stopColor="#c5dae6"/>
+            <stop offset="70%"  stopColor="#8aa8b8"/>
+            <stop offset="100%" stopColor="#5e7e90"/>
+          </linearGradient>
+          {/* Helmet dome top highlight */}
+          <radialGradient id="domeShine" cx="32%" cy="22%" r="45%">
+            <stop offset="0%"   stopColor="rgba(255,255,255,0.55)"/>
+            <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
+          </radialGradient>
           <filter id="glow"     x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="2.5" result="b"/>
             <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
@@ -229,30 +245,80 @@ const AstronautViewer = () => {
           </filter>
           {/* Clip visor so face stays inside */}
           <clipPath id="visorClip">
-            <ellipse cx="150" cy="122" rx="55" ry="51"/>
+            <ellipse cx="150" cy="124" rx="54" ry="50"/>
           </clipPath>
         </defs>
 
         {/* ── BOOT SOLES (drawn first, behind everything) ── */}
-        <ellipse cx="124" cy="448" rx="28" ry="9"  fill="#305060"/>
-        <ellipse cx="176" cy="448" rx="28" ry="9"  fill="#305060"/>
+        <ellipse cx="115" cy="448" rx="22" ry="6"  fill="rgba(0,0,0,0.18)"/>
+        <ellipse cx="185" cy="448" rx="22" ry="6"  fill="rgba(0,0,0,0.18)"/>
 
-        {/* ── LEGS ── connect to torso bottom (torso ends ~y=353) */}
+        {/* ── LEGS ── connect to torso bottom (torso ends ~y=353), clearly separated by gap */}
         {/* Left leg */}
-        <rect x="104" y="335" width="46" height="90" rx="22" fill="url(#suit)"/>
-        <rect x="104" y="335" width="46" height="90" rx="22" fill="url(#shade)"/>
-        <rect x="110" y="372" width="34" height="5"  rx="2.5" fill="rgba(34,211,238,0.65)"/>
-        {/* Left boot upper */}
-        <ellipse cx="127" cy="426" rx="28" ry="15" fill="url(#boot)"/>
-        <ellipse cx="127" cy="426" rx="28" ry="15" fill="url(#shade)"/>
+        <rect x="100" y="335" width="38" height="80" rx="19" fill="url(#suit)"/>
+        <rect x="100" y="335" width="38" height="80" rx="19" fill="url(#shade)"/>
+        <rect x="105" y="370" width="28" height="5"  rx="2.5" fill="rgba(34,211,238,0.65)"/>
+        {/* Left boot ankle cuff */}
+        <rect x="101" y="392" width="36" height="16" rx="8" fill="url(#boot)"/>
+        <rect x="101" y="392" width="36" height="16" rx="8" fill="url(#shade)" opacity="0.4"/>
+        {/* Left foot — distinct shoe shape, toe pointing forward-left, clear gap from right foot */}
+        <path d="M94 406
+                 Q94 400 102 400
+                 L130 400
+                 Q138 401 140 408
+                 L142 421
+                 Q143 431 132 432
+                 L97 432
+                 Q88 431 88 421
+                 Z"
+              fill="url(#boot)"/>
+        <path d="M94 406
+                 Q94 400 102 400
+                 L130 400
+                 Q138 401 140 408
+                 L142 421
+                 Q143 431 132 432
+                 L97 432
+                 Q88 431 88 421
+                 Z"
+              fill="url(#shade)" opacity="0.5"/>
+        {/* Toe cap highlight */}
+        <path d="M130 401 Q138 402 140 409 L142 419 Q137 414 131 413 Z" fill="rgba(255,255,255,0.15)"/>
+        {/* Sole */}
+        <rect x="86" y="426" width="58" height="7" rx="3.5" fill="#2a4452"/>
 
-        {/* Right leg */}
-        <rect x="150" y="335" width="46" height="90" rx="22" fill="url(#suit)"/>
-        <rect x="150" y="335" width="46" height="90" rx="22" fill="url(#shade)"/>
-        <rect x="156" y="372" width="34" height="5"  rx="2.5" fill="rgba(34,211,238,0.65)"/>
-        {/* Right boot upper */}
-        <ellipse cx="173" cy="426" rx="28" ry="15" fill="url(#boot)"/>
-        <ellipse cx="173" cy="426" rx="28" ry="15" fill="url(#shade)"/>
+        {/* Right leg — mirrored, with clear gap from left leg */}
+        <rect x="162" y="335" width="38" height="80" rx="19" fill="url(#suit)"/>
+        <rect x="162" y="335" width="38" height="80" rx="19" fill="url(#shade)"/>
+        <rect x="167" y="370" width="28" height="5"  rx="2.5" fill="rgba(34,211,238,0.65)"/>
+        {/* Right boot ankle cuff */}
+        <rect x="163" y="392" width="36" height="16" rx="8" fill="url(#boot)"/>
+        <rect x="163" y="392" width="36" height="16" rx="8" fill="url(#shade)" opacity="0.4"/>
+        {/* Right foot — mirrored shoe shape */}
+        <path d="M206 406
+                 Q206 400 198 400
+                 L170 400
+                 Q162 401 160 408
+                 L158 421
+                 Q157 431 168 432
+                 L203 432
+                 Q212 431 212 421
+                 Z"
+              fill="url(#boot)"/>
+        <path d="M206 406
+                 Q206 400 198 400
+                 L170 400
+                 Q162 401 160 408
+                 L158 421
+                 Q157 431 168 432
+                 L203 432
+                 Q212 431 212 421
+                 Z"
+              fill="url(#shade)" opacity="0.5"/>
+        {/* Toe cap highlight */}
+        <path d="M170 401 Q162 402 160 409 L158 419 Q163 414 169 413 Z" fill="rgba(255,255,255,0.15)"/>
+        {/* Sole */}
+        <rect x="156" y="426" width="58" height="7" rx="3.5" fill="#2a4452"/>
 
         {/* ── TORSO ── */}
         <rect x="88" y="200" width="124" height="155" rx="36" fill="url(#suit)"/>
@@ -281,15 +347,21 @@ const AstronautViewer = () => {
         <rect x="88"  y="321" width="124" height="4" rx="2"   fill="rgba(59,130,246,0.45)"/>
 
         {/* ── LEFT ARM (static, hangs naturally) ── */}
-        <rect x="58"  y="210" width="34"  height="76" rx="16" fill="url(#suit)"/>
-        <rect x="58"  y="210" width="34"  height="76" rx="16" fill="url(#shade)"/>
+        <rect x="58"  y="210" width="34"  height="80" rx="16" fill="url(#suit)"/>
+        <rect x="58"  y="210" width="34"  height="80" rx="16" fill="url(#shade)"/>
         <rect x="58"  y="274" width="34"  height="7"  rx="3.5" fill="url(#cyan)" opacity="0.75"/>
-        <ellipse cx="75" cy="298" rx="18" ry="13" fill="url(#boot)"/>
-        <ellipse cx="75" cy="298" rx="18" ry="13" fill="url(#shade)"/>
-        {/* Left fingers */}
-        <ellipse cx="66" cy="306" rx="5" ry="7" fill="#4a6a80"/>
-        <ellipse cx="75" cy="309" rx="5" ry="7" fill="#4a6a80"/>
-        <ellipse cx="84" cy="306" rx="5" ry="7" fill="#4a6a80"/>
+        {/* Left hand — relaxed fist, side-profile perspective (matches right hand style) */}
+        <g>
+          {/* Fist — oval shape */}
+          <ellipse cx="75" cy="298" rx="15" ry="17" fill="url(#boot)"/>
+          <ellipse cx="75" cy="298" rx="15" ry="17" fill="url(#shade)" opacity="0.35"/>
+          {/* Knuckle ridge */}
+          <path d="M62 292 Q75 286 88 292" stroke="#3d5d72" strokeWidth="5" strokeLinecap="round" fill="none"/>
+          {/* Finger separation creases */}
+          <line x1="69" y1="296" x2="69" y2="306" stroke="#2a4452" strokeWidth="1.1" opacity="0.45"/>
+          <line x1="75" y1="294" x2="75" y2="307" stroke="#2a4452" strokeWidth="1.1" opacity="0.45"/>
+          <line x1="81" y1="296" x2="81" y2="306" stroke="#2a4452" strokeWidth="1.1" opacity="0.45"/>
+        </g>
 
         {/* ── RIGHT ARM (waving) — pivot top of arm = (208, 218) ── */}
         <g
@@ -303,19 +375,18 @@ const AstronautViewer = () => {
           <rect x="208" y="210" width="34"  height="76" rx="16" fill="url(#suit)"/>
           <rect x="208" y="210" width="34"  height="76" rx="16" fill="url(#shade)"/>
           <rect x="208" y="274" width="34"  height="7"  rx="3.5" fill="url(#cyan)" opacity="0.75"/>
-          <ellipse cx="225" cy="298" rx="18" ry="13" fill="url(#boot)"/>
-          <ellipse cx="225" cy="298" rx="18" ry="13" fill="url(#shade)"/>
-          {/* Fingers: both groups always rendered, visibility toggled via ref in RAF (synced with arm) */}
-          <g ref={fingerGroupOpenRef} style={{ display: "none" }}>
-            <rect x="211" y="285" width="8" height="20" rx="4" fill="#4a6a80"/>
-            <rect x="221" y="282" width="8" height="23" rx="4" fill="#4a6a80"/>
-            <rect x="231" y="284" width="8" height="21" rx="4" fill="#4a6a80"/>
-            <rect x="216" y="299" width="8" height="15" rx="4" fill="#4a6a80" transform="rotate(18,220,306)"/>
-          </g>
-          <g ref={fingerGroupRestRef} style={{ display: "block" }}>
-            <ellipse cx="216" cy="307" rx="5" ry="7" fill="#4a6a80"/>
-            <ellipse cx="225" cy="310" rx="5" ry="7" fill="#4a6a80"/>
-            <ellipse cx="234" cy="307" rx="5" ry="7" fill="#4a6a80"/>
+
+          {/* Right hand — same relaxed fist shape always (matches left hand style), no finger-spread complexity */}
+          <g>
+            {/* Fist — side-profile perspective, oval shape rotated slightly for natural wrist angle */}
+            <ellipse cx="225" cy="298" rx="15" ry="17" fill="url(#boot)"/>
+            <ellipse cx="225" cy="298" rx="15" ry="17" fill="url(#shade)" opacity="0.35"/>
+            {/* Knuckle ridge — curved line across top of fist */}
+            <path d="M212 292 Q225 286 238 292" stroke="#3d5d72" strokeWidth="5" strokeLinecap="round" fill="none"/>
+            {/* Finger separation creases */}
+            <line x1="219" y1="296" x2="219" y2="306" stroke="#2a4452" strokeWidth="1.1" opacity="0.45"/>
+            <line x1="225" y1="294" x2="225" y2="307" stroke="#2a4452" strokeWidth="1.1" opacity="0.45"/>
+            <line x1="231" y1="296" x2="231" y2="306" stroke="#2a4452" strokeWidth="1.1" opacity="0.45"/>
           </g>
         </g>
 
@@ -323,16 +394,24 @@ const AstronautViewer = () => {
         <rect x="126" y="186" width="48" height="26" rx="12" fill="url(#suit)"/>
         <rect x="122" y="198" width="56" height="8"  rx="4"  fill="url(#cyan)" opacity="0.55"/>
 
-        {/* ── HELMET SHELL ── */}
-        <circle cx="150" cy="122" r="86" fill="url(#suit)"/>
-        <circle cx="150" cy="122" r="86" fill="url(#shade)"/>
-        <circle cx="150" cy="122" r="86" fill="none" stroke="rgba(34,211,238,0.2)"  strokeWidth="2"/>
-        <circle cx="150" cy="122" r="79" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="1"/>
+        {/* ── HELMET SHELL ── slightly smaller, more proportional to body */}
+        <circle cx="150" cy="124" r="80" fill="url(#suit)"/>
+        <circle cx="150" cy="124" r="80" fill="url(#shade)"/>
+        {/* Dome top-light glass shine sweep */}
+        <ellipse cx="150" cy="124" rx="80" ry="80" fill="url(#domeShine)" opacity="0.5"/>
+        {/* Outer rim ring — thick, metallic, gives helmet real depth */}
+        <circle cx="150" cy="124" r="80" fill="none" stroke="url(#rim)" strokeWidth="6"/>
+        <circle cx="150" cy="124" r="80" fill="none" stroke="rgba(20,40,55,0.35)" strokeWidth="1.5"/>
+        <circle cx="150" cy="124" r="73" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>
 
-        {/* ── VISOR ── */}
-        <ellipse cx="150" cy="122" rx="55" ry="51" fill="url(#visor)"/>
+        {/* ── VISOR RIM — raised metallic collar around the glass ── */}
+        <ellipse cx="150" cy="124" rx="60" ry="56" fill="url(#rim)"/>
+        <ellipse cx="150" cy="124" rx="60" ry="56" fill="url(#shade)" opacity="0.4"/>
+
+        {/* ── VISOR GLASS ── slightly inset from rim for depth */}
+        <ellipse cx="150" cy="124" rx="54" ry="50" fill="url(#visor)"/>
         {/* Stars inside visor */}
-        {[[125,100],[174,96],[131,146],[170,140],[158,108],[138,118],[177,128],[119,133],[161,156],[144,93]].map(([x,y],i)=>(
+        {[[126,102],[173,98],[132,147],[169,141],[157,109],[139,119],[176,129],[121,134],[160,156],[145,95]].map(([x,y],i)=>(
           <circle key={i} cx={x} cy={y} r={i%3===0?1.2:0.7}
                   fill="white" opacity={0.25+i%4*0.12}/>
         ))}
@@ -368,27 +447,29 @@ const AstronautViewer = () => {
             d="M128 148 Q150 160 172 148"
             stroke="white" strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.88"/>
 
-          {/* Blush — shown on hover */}
-          <ellipse ref={leftBlushRef}  cx="108" cy="138" rx="11" ry="7" fill="rgba(255,140,140,0.2)" opacity="0"/>
-          <ellipse ref={rightBlushRef} cx="192" cy="138" rx="11" ry="7" fill="rgba(255,140,140,0.2)" opacity="0"/>
+          {/* Blush — subtle, shown on hover */}
+          <ellipse ref={leftBlushRef}  cx="108" cy="138" rx="10" ry="6" fill="rgba(255,150,150,0.12)" opacity="0"/>
+          <ellipse ref={rightBlushRef} cx="192" cy="138" rx="10" ry="6" fill="rgba(255,150,150,0.12)" opacity="0"/>
         </g>
 
         {/* Visor glass shine — on top of face */}
-        <ellipse cx="126" cy="94"  rx="26" ry="17" fill="rgba(255,255,255,0.1)"/>
-        <ellipse cx="118" cy="88"  rx="13" ry="7"  fill="rgba(255,255,255,0.07)"/>
+        <ellipse cx="127" cy="96"  rx="25" ry="16" fill="rgba(255,255,255,0.12)"/>
+        <ellipse cx="119" cy="90"  rx="12" ry="6"  fill="rgba(255,255,255,0.08)"/>
 
-        {/* Visor border */}
-        <ellipse cx="150" cy="122" rx="55" ry="51" fill="none"
-                 stroke="rgba(34,211,238,0.55)" strokeWidth="2.5"/>
-        <ellipse cx="150" cy="122" rx="55" ry="51" fill="none"
-                 stroke="rgba(255,255,255,0.1)" strokeWidth="1" strokeDasharray="5 8"/>
+        {/* Visor inner glass edge — subtle bevel for depth */}
+        <ellipse cx="150" cy="124" rx="54" ry="50" fill="none"
+                 stroke="rgba(34,211,238,0.5)" strokeWidth="2"/>
+        <ellipse cx="150" cy="124" rx="57.5" ry="53.5" fill="none"
+                 stroke="rgba(255,255,255,0.15)" strokeWidth="1.5"/>
 
-        {/* Helmet side bars */}
-        <rect x="65" y="98"  width="12" height="46" rx="6" fill="rgba(255,255,255,0.13)"/>
-        <rect x="223" y="98" width="12" height="46" rx="6" fill="rgba(255,255,255,0.13)"/>
+        {/* Helmet side hardware — communication units, more 3D looking */}
+        <rect x="62" y="102" width="13" height="44" rx="6" fill="url(#rim)"/>
+        <rect x="62" y="102" width="13" height="44" rx="6" fill="url(#shade)" opacity="0.5"/>
+        <rect x="225" y="102" width="13" height="44" rx="6" fill="url(#rim)"/>
+        <rect x="225" y="102" width="13" height="44" rx="6" fill="url(#shade)" opacity="0.5"/>
         {/* Side lights */}
-        <circle cx="71"  cy="96" r="7" fill="rgba(34,211,238,0.75)" filter="url(#softglow)"/>
-        <circle cx="229" cy="96" r="7" fill="rgba(34,211,238,0.75)" filter="url(#softglow)"/>
+        <circle cx="68.5"  cy="100" r="7" fill="rgba(34,211,238,0.75)" filter="url(#softglow)"/>
+        <circle cx="231.5" cy="100" r="7" fill="rgba(34,211,238,0.75)" filter="url(#softglow)"/>
 
         {/* Antenna */}
         <line x1="150" y1="36" x2="150" y2="14"
