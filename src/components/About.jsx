@@ -575,19 +575,13 @@ const About = () => {
               focus on performance, clean architecture, maintainability, and
               user experience.
             </p>
-            <p className="text-gray-400 leading-relaxed mb-6">
-              I've built and deployed production-grade digital products across
-              multiple domains — including{" "}
+            <p className="text-gray-400 leading-relaxed mb-8">
+              I've built and deployed production-grade digital products across{" "}
               <span className="text-white font-medium">E-Commerce</span>,{" "}
               <span className="text-white font-medium">SaaS</span>, and{" "}
               <span className="text-white font-medium">Healthcare</span> —
-              delivering solutions that combine modern user experiences with
-              robust backend systems and business-focused functionality.
-            </p>
-            <p className="text-gray-400 leading-relaxed mb-8">
-              Every project I build is designed to be scalable, maintainable,
-              and ready for real-world use — from database design and
-              authentication to SEO optimization, admin dashboards, and
+              delivering scalable solutions ready for real-world use, from
+              authentication and database design to SEO optimization and
               production deployment.
             </p>
 
