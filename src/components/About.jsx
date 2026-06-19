@@ -559,20 +559,36 @@ const About = () => {
               <span className="text-cyan-400 font-semibold">
                 Full-Stack Developer
               </span>{" "}
-              who doesn't just write code — I build complete digital products
-              that work, scale, and leave an impression.
+              who doesn't just write code — I think through the product,
+              understand the business goals behind it, and build complete
+              digital products that solve real problems, scale with growth, and
+              deliver real value.
+            </p>
+            <p className="text-gray-400 leading-relaxed mb-6">
+              From pixel-perfect{" "}
+              <span className="text-white font-medium">React</span> frontends
+              to secure{" "}
+              <span className="text-white font-medium">ASP.NET Core</span>{" "}
+              backends and{" "}
+              <span className="text-white font-medium">PostgreSQL</span>{" "}
+              databases, I handle the entire development lifecycle with a strong
+              focus on performance, clean architecture, maintainability, and
+              user experience.
+            </p>
+            <p className="text-gray-400 leading-relaxed mb-6">
+              I've built and deployed production-grade digital products across
+              multiple domains — including{" "}
+              <span className="text-white font-medium">E-Commerce</span>,{" "}
+              <span className="text-white font-medium">SaaS</span>, and{" "}
+              <span className="text-white font-medium">Healthcare</span> —
+              delivering solutions that combine modern user experiences with
+              robust backend systems and business-focused functionality.
             </p>
             <p className="text-gray-400 leading-relaxed mb-8">
-              From pixel-perfect frontends with{" "}
-              <span className="text-white font-medium">React</span> and{" "}
-              <span className="text-white font-medium">Tailwind CSS</span>, to
-              robust, secure backends with{" "}
-              <span className="text-white font-medium">ASP.NET Core</span> and{" "}
-              <span className="text-white font-medium">PostgreSQL</span> — I
-              handle the full stack with clean architecture and attention to
-              detail. I've shipped 3 real-world projects: an E-Commerce
-              platform, a SaaS Task Manager, and a Doctor Booking System — all
-              built from scratch and deployed live.
+              Every project I build is designed to be scalable, maintainable,
+              and ready for real-world use — from database design and
+              authentication to SEO optimization, admin dashboards, and
+              production deployment.
             </p>
 
             <div className="relative rounded-xl border border-cyan-500/15 bg-[#040d1a]/60 p-5 mb-8 overflow-hidden">
