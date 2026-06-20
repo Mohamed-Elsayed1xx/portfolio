@@ -80,7 +80,7 @@ export const projects = [
 ];
 
 export const socialLinks = {
-  linkedin: "https://www.linkedin.com/in/mohamed-elsayed1st/",
-  github: "https://github.com/Mohamed-Elsayed1xx",
+  linkedin: "www.linkedin.com/in/mohamed-elsayed-xx1",
+  github: "github.com/Mohamed-Elsayed1xx",
   whatsapp: "https://wa.me/201021399112",
 };
